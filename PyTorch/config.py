@@ -5,13 +5,14 @@ import torch
 from albumentations.pytorch import ToTensorV2
 from utils import seed_everything
 
-DATASET = "PASCAL_VOC"
+DATASET = "COCO"  # PASCAL_VOC
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # seed_everything()  # If you want deterministic behavior
+
 NUM_WORKERS = 4
 BATCH_SIZE = 32
 IMAGE_SIZE = 416
-NUM_CLASSES = 20
+NUM_CLASSES = 20 if DATASET == "COCO" else 80
 LEARNING_RATE = 1e-5
 WEIGHT_DECAY = 1e-4
 NUM_EPOCHS = 100
@@ -23,8 +24,8 @@ PIN_MEMORY = True
 LOAD_MODEL = True
 SAVE_MODEL = True
 CHECKPOINT_FILE = "checkpoint.pth.tar"
-IMG_DIR = DATASET + "/images/"
-LABEL_DIR = DATASET + "/labels/"
+IMG_DIR = "/home/marcos/Datasets/" + DATASET + "/images/"
+LABEL_DIR = "/home/marcos/Datasets/" + DATASET + "/labels/"
 
 ANCHORS = [
     [(0.28, 0.22), (0.38, 0.48), (0.9, 0.78)],
@@ -49,7 +50,7 @@ train_transforms = A.Compose(
                 A.ShiftScaleRotate(
                     rotate_limit=20, p=0.5, border_mode=cv2.BORDER_CONSTANT
                 ),
-                A.IAAAffine(shear=15, p=0.5, mode="constant"),
+                # A.IAAAffine(shear=15, p=0.5, mode="constant"),
             ],
             p=1.0,
         ),
@@ -66,11 +67,7 @@ train_transforms = A.Compose(
         ),
         ToTensorV2(),
     ],
-    bbox_params=A.BboxParams(
-        format="yolo",
-        min_visibility=0.4,
-        label_fields=[],
-    ),
+    bbox_params=A.BboxParams(format="yolo", min_visibility=0.4, label_fields=[]),
 )
 test_transforms = A.Compose(
     [

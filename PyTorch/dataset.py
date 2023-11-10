@@ -62,9 +62,17 @@ class YOLODataset(Dataset):
         ).tolist()
 
         if self.transform:
+            # print(f"Image file: {img_path}")
+            # print(f"Label file: {label_path}")
+            # print("Bboxes before augmentation:")
+            # for bbox in bboxes:
+            #     print(bbox)
             augmentations = self.transform(image=image, bboxes=bboxes)
             image = augmentations["image"]
             bboxes = augmentations["bboxes"]
+            # print("Bboxes after augmentation:")
+            # for bbox in bboxes:
+            #     print(bbox)
 
         targets = [
             torch.zeros((self.num_anchors // 3, S, S, 6)) for S in self.S
@@ -131,13 +139,15 @@ def test():
 
         for i in range(y[0].shape[1]):
             anchor = scaled_anchors[i]
-            print(anchor.shape)
-            print(y[i].shape)
+            print(f"Anchor shape: {anchor.shape}")
+            print(f"y[i] shape: {y[i].shape}")
             boxes += cells_to_bboxes(
                 y[i], is_preds=False, S=y[i].shape[2], anchors=anchor
             )[0]
         boxes = nms(boxes, iou_threshold=1, threshold=0.7, box_format="midpoint")
-        print(boxes)
+        print("Boxes:")
+        for bbox in boxes:
+            print(bbox)
         plot_image(x[0].permute(1, 2, 0).to("cpu"), boxes)
 
 
